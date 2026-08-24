@@ -95,9 +95,21 @@ SX1262 status=0x.. device_errors=0x....
 
 ## Building
 
+Don't want to set up PlatformIO? Grab a pre-built binary from this repo's
+[Releases page](../../releases) instead and flash it via WebSerial -- see
+"Flashing it" in `examples/channel_board/README.md`.
+
+To build from source:
+
 ```
 pio run -e SenseCapIndicator_D1_channel_board -t upload
 ```
+
+`-t mergebin` instead of `-t upload` produces a single flattened
+`firmware-merged.bin` (bootloader+partitions+app, flashable at address
+0x0) -- the format WebSerial flashers expect for a first-time install;
+`.github/workflows/build-channel-board-firmware.yml` builds and publishes
+one on every `channel-board-*` tag.
 
 See `examples/channel_board/README.md` for what that firmware actually
 does and how to configure it. This variant only defines the board
