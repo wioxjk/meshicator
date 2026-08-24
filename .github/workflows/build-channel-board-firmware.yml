@@ -5,6 +5,14 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: >
+          PlatformIO env to build (e.g. to cross-check the unmodified
+          sensecap_indicator-espnow board bring-up against this repo's own
+          LoRa variant during debugging). Defaults to the normal release build.
+        required: false
+        default: SenseCapIndicator_D1_channel_board
   push:
     tags:
       - 'channel-board-*'
@@ -23,12 +31,13 @@ jobs:
       - name: Build Firmware
         env:
           FIRMWARE_VERSION: ${{ env.GIT_TAG_VERSION }}
-        run: bash build.sh build-firmware SenseCapIndicator_D1_channel_board
+          BUILD_ENV: ${{ inputs.environment || 'SenseCapIndicator_D1_channel_board' }}
+        run: bash build.sh build-firmware "$BUILD_ENV"
 
       - name: Upload Workflow Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: SenseCapIndicator_D1_channel_board
+          name: ${{ inputs.environment || 'SenseCapIndicator_D1_channel_board' }}
           path: out
 
       - name: Create Release

@@ -115,6 +115,13 @@ void setup() {
 
   board.begin();
 
+  // TEMP DEBUG: the I2C scan took ~1 minute to finish and report nothing --
+  // consistent with each of the 116 scanned addresses slowly timing out
+  // rather than cleanly NACKing, which points at a stuck/floating bus rather
+  // than "right bus, no device at this address". Cap each transaction's
+  // timeout so this stays fast and doesn't read as a hang.
+  Wire.setTimeOut(20);
+
   char pre_display_scan[64];
   i2cScanInto(pre_display_scan, sizeof(pre_display_scan));
 
