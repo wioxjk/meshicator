@@ -28,18 +28,18 @@ variant/example can be built the normal MeshCore way.
 
 ## Flashing
 
-Grab a pre-built `-merged.bin` from this repo's [Releases](../../releases)
-and flash it from the browser via the official
-[MeshCore flasher](https://flasher.meshcore.io)'s "Custom Firmware"
-option (WebSerial, no install needed) -- or build it yourself:
+Setting one up? See **[the getting-started guide](examples/channel_board/GETTING_STARTED.md)**
+for the full flash-it-and-configure-it walkthrough (download a pre-built
+`-merged.bin` from [Releases](../../releases), flash it from the browser
+via the official [MeshCore flasher](https://flasher.meshcore.io)'s
+"Custom Firmware" option, no install needed).
+
+Prefer to build from source instead:
 
 ```bash
 # install PlatformIO first: https://docs.platformio.org
 pio run -e SenseCapIndicator_D1_channel_board -t upload
 ```
-
-Then connect over USB serial (115200 baud) to configure which channels it
-watches -- see `examples/channel_board/README.md` for both.
 
 ## Built on MeshCore
 

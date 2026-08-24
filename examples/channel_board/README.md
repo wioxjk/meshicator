@@ -7,6 +7,10 @@ room. That's it -- no contacts, no menus, no configuration screens. The
 idea is a device you could leave on a kitchen counter for a relative who
 has no interest in learning a chat app: messages just appear.
 
+Just want to set one up? See **[GETTING_STARTED.md](./GETTING_STARTED.md)**
+for a short flash-it-and-configure-it walkthrough. The rest of this file
+is the fuller reference.
+
 <p>&nbsp;</p>
 
 ## Flashing it
