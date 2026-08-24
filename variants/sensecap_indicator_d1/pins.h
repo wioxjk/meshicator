@@ -40,3 +40,9 @@
 
 // ---- misc ----
 #define PIN_USER_BTN          38   // active LOW
+
+// NOTE: P_LORA_NSS/P_LORA_DIO_1 are set via platformio.ini build_flags, not
+// here -- helpers/ESP32Board.cpp #includes "ESP32Board.h" (where the inline
+// getIRQGpio() uses P_LORA_DIO_1) BEFORE it #includes <target.h> (where
+// this file would otherwise define it), so a plain #define here arrives
+// too late for the preprocessor. See platformio.ini for the full story.

@@ -2,7 +2,7 @@
 #include "target.h"
 #include <helpers/ArduinoHelpers.h>
 
-ESP32Board board;
+SenseCapD1Board board;
 
 TCA9535 io_expander(IOEXP_I2C_ADDR);
 
@@ -15,23 +15,46 @@ WRAPPER_CLASS radio_driver(radio, board);
 
 ESP32RTCClock rtc_clock;
 
+EnvironmentSensorManager sensors = EnvironmentSensorManager();
+
 #ifdef DISPLAY_CLASS
   DISPLAY_CLASS display;
   MomentaryButton user_btn(PIN_USER_BTN, 1000, true, true);
 #endif
 
+// TEMP DEBUG: paints the screen a distinct solid color at each boot
+// checkpoint inside radio_init(), so a freeze/crash in here is visible on
+// screen even with no serial connection. Whichever color is frozen on
+// screen tells us which line it died on. Safe to delete once the boot
+// hang is diagnosed -- grep "TEMP DEBUG" (also in examples/channel_board/main.cpp).
+static void debugStage(ColorVal color) {
+  display.startFrame(color);
+  display.endFrame();
+}
+
 bool radio_init() {
   rtc_clock.begin();
+
+  debugStage(TFT_RED);       // about to talk to the TCA9535 over I2C
 
   // ESP32Board::begin() already brought up Wire on PIN_BOARD_SDA/SCL
   if (!io_expander.begin()) {
     MESH_DEBUG_PRINTLN("ERROR: TCA9535 IO expander not responding on I2C addr 0x%02X", IOEXP_I2C_ADDR);
+    debugStage(TFT_WHITE);   // clean, expected failure: expander didn't ACK
     return false;
   }
 
+  debugStage(TFT_ORANGE);    // expander ACK'd; about to bring up the LoRa SPI bus
+
   lora_spi.begin(PIN_LORA_SCLK, PIN_LORA_MISO, PIN_LORA_MOSI);
 
-  return radio.std_init(&lora_spi);
+  debugStage(TFT_YELLOW);    // SPI bus up; about to run the SX1262 init sequence
+
+  bool ok = radio.std_init(&lora_spi);
+
+  debugStage(ok ? TFT_GREEN : TFT_WHITE);   // radio init result
+
+  return ok;
 }
 
 void radio_service() {

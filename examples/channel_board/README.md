@@ -7,7 +7,39 @@ room. That's it -- no contacts, no menus, no configuration screens. The
 idea is a device you could leave on a kitchen counter for a relative who
 has no interest in learning a chat app: messages just appear.
 
+Just want to set one up? See **[GETTING_STARTED.md](./GETTING_STARTED.md)**
+for a short flash-it-and-configure-it walkthrough. The rest of this file
+is the fuller reference.
+
 <p>&nbsp;</p>
+
+## Flashing it
+
+No PlatformIO or laptop needed for this part -- everything happens in the
+browser over WebSerial (Chrome or Edge, plugged in via USB).
+
+1. Grab the latest `SenseCapIndicator_D1_channel_board-*-merged.bin` from
+   this repo's [Releases page](../../../../releases) (built automatically
+   by `.github/workflows/build-channel-board-firmware.yml`).
+2. Open the official [MeshCore flasher](https://flasher.meshcore.io) and
+   choose its "Custom Firmware" option, then select that `-merged.bin`
+   file. It'll ask to erase+flash over WebSerial -- confirm, and it's
+   done in under a minute.
+3. No browser handy, or prefer the CLI? `esptool.py` works identically:
+   ```
+   pip install esptool
+   esptool.py --chip esp32s3 --port /dev/ttyACM0 write_flash 0x0 SenseCapIndicator_D1_channel_board-*-merged.bin
+   ```
+
+This board isn't in the flasher's own curated device list (that list
+mirrors official MeshCore releases; getting a new board added there means
+this variant landing in [upstream MeshCore](https://github.com/meshcore-dev/meshcore)
+first) -- "Custom Firmware" is the part of the flasher that works for any
+device today, listed or not, and it's exactly what these release binaries
+are built for.
+
+Prefer building it yourself instead? See
+`variants/sensecap_indicator_d1/README.md`.
 
 ## What it does
 

@@ -1,23 +1,26 @@
 #pragma once
 
 #define RADIOLIB_STATIC_ONLY 1
-#include <helpers/ESP32Board.h>
 #include <helpers/radiolib/CustomSX1262Wrapper.h>
 #include <helpers/ui/MomentaryButton.h>
+#include <helpers/sensors/EnvironmentSensorManager.h>
 
 #include "pins.h"
 #include "TCA9535.h"
 #include "IOExpanderRadioHal.h"
+#include "SenseCapD1Board.h"
 
 #ifdef DISPLAY_CLASS
   #include "IndicatorDisplay.h"
 #endif
 
-extern ESP32Board board;
+extern SenseCapD1Board board;
 extern WRAPPER_CLASS radio_driver;
 extern ESP32RTCClock rtc_clock;
 extern TCA9535 io_expander;
 extern IOExpanderRadioHal radio_hal;
+extern EnvironmentSensorManager sensors;   // no sensors on this board -- exists because
+                                            // helpers/ESP32Board.cpp's enterDeepSleep() expects one
 
 #ifdef DISPLAY_CLASS
   extern DISPLAY_CLASS display;

@@ -106,8 +106,16 @@ void setup() {
   }
   fast_rng.begin(radio_driver.getRngSeed());
 
+  // TEMP DEBUG: see the matching comment in variants/sensecap_indicator_d1/target.cpp --
+  // same idea, covering the boot stages after radio_init() succeeds.
+  display.startFrame(TFT_CYAN);
+  display.endFrame();
+
   SPIFFS.begin(true);
   channel_config.load(SPIFFS);
+
+  display.startFrame(TFT_BLUE);   // TEMP DEBUG: SPIFFS + channel config loaded ok
+  display.endFrame();
 
   IdentityStore id_store(SPIFFS, "/identity");
   if (!id_store.load("_main", the_mesh.self_id)) {
@@ -118,6 +126,9 @@ void setup() {
     }
     id_store.save("_main", the_mesh.self_id);
   }
+
+  display.startFrame(TFT_MAGENTA);   // TEMP DEBUG: identity ready; setup() about to finish
+  display.endFrame();
 
   Serial.print("Message Board ID: ");
   mesh::Utils::printHex(Serial, the_mesh.self_id.pub_key, PUB_KEY_SIZE);
