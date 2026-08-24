@@ -41,12 +41,19 @@
 // ---- misc ----
 #define PIN_USER_BTN          38   // active LOW
 
-// helpers/ESP32Board.cpp's enterDeepSleep() unconditionally does
-// digitalWrite(P_LORA_NSS, HIGH) + rtc_gpio_hold_en(P_LORA_NSS) to keep the
-// radio off during deep sleep -- a real GPIO is required just for this to
-// compile, even though our real NSS is on the IO expander (see
-// IOEXP_LORA_NSS above) and can't actually be RTC-held this way. This
-// board never calls enterDeepSleep()/powerOff() (see SenseCapD1Board.h),
-// so it's dead code; GPIO43 is otherwise unused by this firmware (it's
-// wired to the RP2040 co-processor's UART RX, which we don't talk to).
+// helpers/ESP32Board.h/.cpp reference these two unconditionally -- not
+// behind any #ifdef -- so they must be #defined as *something* for the
+// base class to compile at all, even though this board's real NSS/DIO1
+// live on the IO expander (see IOEXP_LORA_NSS/IOEXP_LORA_DIO1 above) and
+// can't actually be touched as native GPIOs this way:
+//   - enterDeepSleep() does digitalWrite(P_LORA_NSS, HIGH) + rtc_gpio_hold_en(P_LORA_NSS)
+//   - the inline ESP32Board::getIRQGpio() returns P_LORA_DIO_1 (its body
+//     must compile to build ESP32Board's vtable, even though
+//     SenseCapD1Board.h overrides it with the real behaviour used at
+//     runtime)
+// Neither path is ever reached on this board (see SenseCapD1Board.h), so
+// these are compile-only placeholders. GPIO43/44 are otherwise unused by
+// this firmware (wired to the RP2040 co-processor's UART, which we don't
+// talk to).
 #define P_LORA_NSS             43
+#define P_LORA_DIO_1           44
