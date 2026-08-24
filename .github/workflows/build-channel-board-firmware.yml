@@ -1,0 +1,45 @@
+name: Build Channel Board Firmware
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'channel-board-*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Clone Repo
+        uses: actions/checkout@v6
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-environment
+
+      - name: Build Firmware
+        env:
+          FIRMWARE_VERSION: ${{ env.GIT_TAG_VERSION }}
+        run: bash build.sh build-firmware SenseCapIndicator_D1_channel_board
+
+      - name: Upload Workflow Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: SenseCapIndicator_D1_channel_board
+          path: out
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/') # only create a release for tagged builds
+        uses: softprops/action-gh-release@v3
+        with:
+          name: "Channel Board ${{ env.GIT_TAG_VERSION }}"
+          body: |
+            Flash the `*-merged.bin` file for a first-time install (use the official
+            [MeshCore flasher](https://flasher.meshcore.io) > "Custom Firmware", or
+            `esptool.py --chip esp32s3 write_flash 0x0 <file>-merged.bin`).
+            See `examples/channel_board/README.md` for setup instructions.
+          draft: true
+          files: out/*
