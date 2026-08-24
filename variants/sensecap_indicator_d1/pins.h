@@ -40,3 +40,13 @@
 
 // ---- misc ----
 #define PIN_USER_BTN          38   // active LOW
+
+// helpers/ESP32Board.cpp's enterDeepSleep() unconditionally does
+// digitalWrite(P_LORA_NSS, HIGH) + rtc_gpio_hold_en(P_LORA_NSS) to keep the
+// radio off during deep sleep -- a real GPIO is required just for this to
+// compile, even though our real NSS is on the IO expander (see
+// IOEXP_LORA_NSS above) and can't actually be RTC-held this way. This
+// board never calls enterDeepSleep()/powerOff() (see SenseCapD1Board.h),
+// so it's dead code; GPIO43 is otherwise unused by this firmware (it's
+// wired to the RP2040 co-processor's UART RX, which we don't talk to).
+#define P_LORA_NSS             43

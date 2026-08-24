@@ -2,7 +2,7 @@
 #include "target.h"
 #include <helpers/ArduinoHelpers.h>
 
-ESP32Board board;
+SenseCapD1Board board;
 
 TCA9535 io_expander(IOEXP_I2C_ADDR);
 
@@ -14,6 +14,8 @@ RADIO_CLASS radio = new Module(&radio_hal, IOEXP_PIN(IOEXP_LORA_NSS), IOEXP_PIN(
 WRAPPER_CLASS radio_driver(radio, board);
 
 ESP32RTCClock rtc_clock;
+
+EnvironmentSensorManager sensors = EnvironmentSensorManager();
 
 #ifdef DISPLAY_CLASS
   DISPLAY_CLASS display;
