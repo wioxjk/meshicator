@@ -88,17 +88,49 @@ static void handleCommand(char* cmd) {
 
 static char command[128];
 
+// TEMP DEBUG: a from-scratch I2C scan finds nothing at all (not even the
+// TCA9535 at radio_init() time -- see target.cpp's i2cScanAndShow()), which
+// could mean the bus is dead outright, or that display.begin() -- which
+// brings up LovyanGFX's own internal I2C handling for the touch controller,
+// on the same physical pins Arduino's Wire also uses -- leaves the bus in a
+// state that breaks later Wire calls. Scan *before* display.begin() runs at
+// all and stash the result, so we can compare "before" vs "after" once the
+// screen is available to show it.
+static void i2cScanInto(char* out, size_t out_sz) {
+  size_t len = 0;
+  out[0] = 0;
+  for (uint8_t addr = 0x03; addr <= 0x77; addr++) {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0) {
+      len += snprintf(out + len, out_sz - len, "0x%02X ", addr);
+      if (len >= out_sz) break;
+    }
+  }
+  if (len == 0) snprintf(out, out_sz, "(nothing)");
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
 
   board.begin();
 
+  char pre_display_scan[64];
+  i2cScanInto(pre_display_scan, sizeof(pre_display_scan));
+
   if (display.begin()) {
     display.startFrame();
     display.setCursor(20, 20);
     display.print("Starting up...");
     display.endFrame();
+
+    display.startFrame(TFT_PURPLE);   // TEMP DEBUG: pre-display.begin() I2C scan result
+    display.setCursor(10, 10);
+    display.setColor(TFT_WHITE);
+    display.print("I2C before display.begin():");
+    display.print(pre_display_scan);
+    display.endFrame();
+    delay(3000);   // hold it on screen long enough to read before the next checkpoint overwrites it
   }
 
   if (!radio_init()) {
