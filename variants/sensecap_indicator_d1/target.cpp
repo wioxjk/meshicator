@@ -40,7 +40,7 @@ bool radio_init() {
   // ESP32Board::begin() already brought up Wire on PIN_BOARD_SDA/SCL
   if (!io_expander.begin()) {
     MESH_DEBUG_PRINTLN("ERROR: TCA9535 IO expander not responding on I2C addr 0x%02X", IOEXP_I2C_ADDR);
-    debugStage(TFT_WHITE);   // clean, expected failure: expander didn't ACK
+    debugStage(TFT_BLUEVIOLET);   // clean, expected failure: expander didn't ACK on I2C
     return false;
   }
 
