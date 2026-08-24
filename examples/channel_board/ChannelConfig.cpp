@@ -1,5 +1,13 @@
 #include "ChannelConfig.h"
-#include <base64.hpp>
+
+// NOTE: deliberately not #include <base64.hpp> here -- its functions
+// aren't declared inline, so a second translation unit including it
+// causes "multiple definition" link errors. src/helpers/BaseChatMesh.cpp
+// already includes it (and is always compiled), so just declare the two
+// functions we need against its real signatures and link against that
+// one definition instead.
+unsigned int decode_base64(const unsigned char input[], unsigned int input_length, unsigned char output[]);
+unsigned int encode_base64(const unsigned char input[], unsigned int input_length, unsigned char output[]);
 
 bool ChannelConfig::add(const char* name, const char* psk_base64) {
   if (_count >= MAX_GROUP_CHANNELS) return false;
