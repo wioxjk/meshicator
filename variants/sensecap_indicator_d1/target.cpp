@@ -32,6 +32,29 @@ static void debugStage(ColorVal color) {
   display.endFrame();
 }
 
+// TEMP DEBUG: confirmed the expander never ACKs at IOEXP_I2C_ADDR (0x20) --
+// scan the whole I2C address range and print whatever *does* answer,
+// directly on screen (no serial needed), then stay on this frame so it's
+// readable instead of being overwritten by the next checkpoint color.
+static void i2cScanAndShow(ColorVal bkg) {
+  display.startFrame(bkg);
+  display.setCursor(10, 10);
+  display.setColor(TFT_BLACK);
+  display.print("I2C scan:");
+  bool found = false;
+  for (uint8_t addr = 0x03; addr <= 0x77; addr++) {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0) {
+      char buf[16];
+      snprintf(buf, sizeof(buf), "found 0x%02X", addr);
+      display.print(buf);
+      found = true;
+    }
+  }
+  if (!found) display.print("(nothing responded)");
+  display.endFrame();
+}
+
 bool radio_init() {
   rtc_clock.begin();
 
@@ -40,7 +63,7 @@ bool radio_init() {
   // ESP32Board::begin() already brought up Wire on PIN_BOARD_SDA/SCL
   if (!io_expander.begin()) {
     MESH_DEBUG_PRINTLN("ERROR: TCA9535 IO expander not responding on I2C addr 0x%02X", IOEXP_I2C_ADDR);
-    debugStage(TFT_BLUEVIOLET);   // clean, expected failure: expander didn't ACK on I2C
+    i2cScanAndShow(TFT_BLUEVIOLET);   // clean, expected failure: expander didn't ACK on I2C
     return false;
   }
 
