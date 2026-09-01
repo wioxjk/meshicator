@@ -113,6 +113,16 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
 
+  // TEMP DEBUG: read SDA/SCL as plain inputs BEFORE the I2C peripheral claims
+  // them. An idle I2C bus must read HIGH on both (pull-ups); a LOW here means
+  // the line is being held down, which is what would make every transaction
+  // time out (~500ms each) instead of NACKing instantly.
+  pinMode(PIN_BOARD_SDA, INPUT_PULLUP);
+  pinMode(PIN_BOARD_SCL, INPUT_PULLUP);
+  delay(5);
+  int sda_idle = digitalRead(PIN_BOARD_SDA);
+  int scl_idle = digitalRead(PIN_BOARD_SCL);
+
   board.begin();
 
   // TEMP DEBUG: the I2C scan took ~1 minute to finish and report nothing --
@@ -121,6 +131,25 @@ void setup() {
   // than "right bus, no device at this address". Cap each transaction's
   // timeout so this stays fast and doesn't read as a hang.
   Wire.setTimeOut(20);
+
+  // TEMP DEBUG: probe the addresses this board is documented to have, keeping
+  // each one's Wire error code (0=ACK, 2=NACK on address, 5=timeout). NACK vs
+  // timeout is the key distinction: NACK = bus works, nothing at that address;
+  // timeout = bus itself isn't functioning. 0x39 is the alternate IO-expander
+  // address Seeed's own BSP falls back to (sensecap_indicator_board.c).
+  static const uint8_t probe_addrs[] = { 0x20, 0x39, 0x48, 0x38, 0x77 };
+  char probe_result[96];
+  {
+    size_t len = 0;
+    probe_result[0] = 0;
+    for (size_t i = 0; i < sizeof(probe_addrs); i++) {
+      Wire.beginTransmission(probe_addrs[i]);
+      uint8_t rc = Wire.endTransmission();
+      len += snprintf(probe_result + len, sizeof(probe_result) - len,
+                      "%02X:%u ", probe_addrs[i], (unsigned)rc);
+      if (len >= sizeof(probe_result)) break;
+    }
+  }
 
   char pre_display_scan[64];
   i2cScanInto(pre_display_scan, sizeof(pre_display_scan));
@@ -131,13 +160,18 @@ void setup() {
     display.print("Starting up...");
     display.endFrame();
 
-    display.startFrame(TFT_PURPLE);   // TEMP DEBUG: pre-display.begin() I2C scan result
+    display.startFrame(TFT_PURPLE);   // TEMP DEBUG: I2C diagnostics, before radio_init()
     display.setCursor(10, 10);
     display.setColor(TFT_WHITE);
-    display.print("I2C before display.begin():");
+    char line[96];
+    snprintf(line, sizeof(line), "SDA idle=%d  SCL idle=%d", sda_idle, scl_idle);
+    display.print(line);
+    display.print("probe (0=ack 2=nack 5=timeout):");
+    display.print(probe_result);
+    display.print("scan:");
     display.print(pre_display_scan);
     display.endFrame();
-    delay(3000);   // hold it on screen long enough to read before the next checkpoint overwrites it
+    delay(15000);   // hold it on screen long enough to read/photograph
   }
 
   if (!radio_init()) {
